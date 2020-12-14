@@ -1,0 +1,27 @@
+{
+    "name": "xuanchen/unionpay",
+    "description": "第三方银联对接",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "玄尘",
+            "email": "122383162@qq.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.1.3",
+        "laravel/framework": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "XuanChen\\UnionPay\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "XuanChen\\UnionPay\\ServiceProvider"
+            ]
+        }
+    }
+}
