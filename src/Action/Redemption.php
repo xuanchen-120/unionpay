@@ -3,7 +3,7 @@
 namespace XuanChen\UnionPay\Action;
 
 use App\Models\ActivityCoupon;
-use App\Models\UnionpayLog;
+use XuanChen\UnionPay\Models\UnionpayLog;
 use App\Models\User;
 use XuanChen\Coupon\Coupon;
 use XuanChen\UnionPay\Contracts\Contracts;

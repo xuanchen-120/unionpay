@@ -8,8 +8,24 @@ class ServiceProvider extends LaravelServiceProvider
 {
 
     /**
-     * Register services.
+     * Bootstrap services.
      * @return void
+     */
+    public function boot()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->publishes([__DIR__ . '/../config/unionpay.php' => config_path('unionpay.php')]);
+            $this->loadMigrationsFrom(__DIR__ . '/../database/migrations/');
+
+        }
+        $this->loadRoutesFrom(__DIR__ . '/routes.php');
+
+    }
+
+    /**
+     * Notes: 部署时加载
+     * @Author: 玄尘
+     * @Date  : 2020/12/11 16:50
      */
     public function register()
     {
@@ -19,32 +35,8 @@ class ServiceProvider extends LaravelServiceProvider
 
             return $unionpay;
         });
-    }
-
-    /**
-     * Bootstrap services.
-     * @return void
-     */
-    public function boot()
-    {
-        $this->setConfig();
-        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations/');
-
-    }
-
-    public function setConfig()
-    {
-        $path = __DIR__ . '/../config/unionpay.php';
-
-        if ($this->app->runningInConsole()) {
-            $this->publishes([$path => config_path('unionpay.php'),]);
-            $this->publishes([__DIR__ . '/database/migrations' => database_path('migrations')]);
-
-        }
-
-        $this->mergeConfigFrom($path, 'unionpay');
-
+        
+        $this->mergeConfigFrom(__DIR__ . '/../config/unionpay.php', 'unionpay');
     }
 
 }

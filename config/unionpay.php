@@ -2,25 +2,33 @@
 
 return [
     //添加日志
-    'log'         => true,
+    'log'          => true,
+    'unionpay_url' => [
+        'code' => 'http://dev.spserv.yxlm.chinaums.com:25941/spapigateway/v2/markting/sp/coupon/order/get',
+    ],
+    //不进行sign校验
+    'nosign'       => [
+        'openid',
+        'code',
+    ],
     //分配的渠道号
-    'msg_sender'  => '660134',
+    'msg_sender'   => '660134',
     //打印在小票上，由活动标题、优惠金额、原始金额组合而成
-    'pos_receipt' => '本时生活，优惠生活',
+    'pos_receipt'  => '本时生活，优惠生活',
     //广告，用于打印在小票上
-    'pos_ad'      => '',
+    'pos_ad'       => '',
     //营销联盟广告，用于打印在小票上
-    'pos_mkt_ad'  => '本时生活，优惠生活',
+    'pos_mkt_ad'   => '本时生活，优惠生活',
     //银联渠道id
-    'agent_id'    => '299',
+    'agent_id'     => '299',
     //银联网点id
-    'outlet_id'   => '2009300919918',
+    'outlet_id'    => '2009300919918',
     //用于银商与sp分润的金额(是佣金的一部分), 以分为单位
-    'serv_chg'    => 0,
+    'serv_chg'     => 0,
     //佣金
-    'commission'  => 0,
+    'commission'   => 0,
     //证书
-    'check'       => [
+    'check'        => [
         'self'     => [
             'private' => storage_path('cert/unionpay/self/private_rsa.pem'),
             'public'  => storage_path('cert/unionpay/self/public_rsa.pem'),
@@ -29,20 +37,26 @@ return [
             'public' => storage_path('cert/unionpay/public_rsa.pem'),
         ],
     ],
-    'type'        => [
+    'type'         => [
         '002025' => '查询',
         '002100' => '交易',
         '002101' => '冲正',
         '002102' => '撤销',
+        'openid' => '封装openid参数',
+        '106040' => '领券',
+        '012100' => '核销通知',
     ],
-    'log_type'    => [
+    'log_type'     => [
         '002025' => 'query',
         '002100' => 'freezecoupon',
         '002101' => 'reversal',
         '002102' => 'annul',
+        'openid' => 'openid',
+        '106040' => 'getcode',
+        '012100' => 'notify',
     ],
     //需要校验的数据
-    'validator'   => [
+    'validator'    => [
         '002025' => [
             "msg_type",
             "msg_txn_code",
@@ -98,9 +112,70 @@ return [
             "req_serial_no",
             "orig_req_serial_no",
         ],
+        //封装openid参数
+        'openid' => [
+            "msg_type",
+            "msg_txn_code",
+            "msg_crrltn_id",
+            "msg_sender",
+            "callback_type",
+            "callback_url",
+        ],
+        //本时生活领券
+        'code'   => [
+            "msg_type",
+            "msg_txn_code",
+            "msg_crrltn_id",
+            "msg_sender",
+            "issue_user_id",
+            "event_no",
+            "mobile",
+        ],
+
+        //本时生活领券
+        '106040' => [
+            'msg_type',
+            'msg_txn_code',
+            'msg_crrltn_id',
+            //            'msg_flg',
+            'msg_sender',
+            'msg_time',
+            'msg_sys_sn',
+            'msg_ver',
+            'sp_chnl_no',
+            'sp_order_no',
+            'order_date',
+            'event_no',
+            'issue_user_id',
+        ],
+        //回调核销信息
+        '012100' => [
+            'msg_type',
+            'msg_txn_code',
+            'msg_crrltn_id',
+            'msg_flg',
+            'msg_sender',
+            'msg_time',
+            'msg_sys_sn',
+            'msg_ver',
+            'mchnt_no',
+            'term_no',
+            'shop_no',
+            'req_serial_no',
+            'coupon_no',
+            'orig_amt',
+            'discount_amt',
+            'pay_amt',
+            'event_no',
+            'trans_crrltn_no',
+            'order_no',
+            'order_no',
+            'order_no',
+            'order_no',
+        ],
     ],
     //入库基础数据
-    'regular'     => [
+    'regular'      => [
         '002025' => [
             "msg_type",
             "msg_txn_code",
@@ -150,8 +225,45 @@ return [
             "req_serial_no",//自己添加的基础数据
             "orig_req_serial_no",//自己添加的基础数据
         ],
+        //封装获取openid数据
+        'openid' => [
+            "msg_type",
+            "msg_txn_code",
+            "msg_crrltn_id",
+            "msg_sender",
+        ],
+        //本时生活领券
+        'code'   => [
+            "msg_type",
+            "msg_txn_code",
+            "msg_crrltn_id",
+            "msg_sender",
+        ],
+        //去联盟领券
+        '106040' => [
+            'msg_type',
+            'msg_txn_code',
+            'msg_crrltn_id',
+            //            'msg_flg',
+            'msg_sender',
+            'msg_time',
+            'msg_sys_sn',
+            'msg_ver',
+        ],
+        //回调核销信息
+        '012100' => [
+            'msg_type',
+            'msg_txn_code',
+            'msg_crrltn_id',
+            'msg_sender',
+            'msg_time',
+            'msg_sys_sn',
+            'msg_ver',
+            'req_serial_no',
+            'sett_date',
+        ],
     ],
-    'fields'      => [
+    'fields'       => [
         //聚合营销优惠查询接口
         '002025' => [
             'in'  => [
@@ -334,6 +446,117 @@ return [
                 "ad"            => "广告",
                 "td_code"       => "二维码",
                 "sign"          => "签名数据",
+            ],
+        ],
+
+        'openid' => [
+            'in'  => [
+                "msg_type"      => "报文类型",
+                "msg_txn_code"  => "交易代码",
+                "msg_crrltn_id" => "消息关联号",
+                "msg_sender"    => "报文发送方",
+                "callback_type" => "回调类型",
+                "callback_url"  => "回调地址",
+            ],
+            'out' => [
+                "msg_sender"    => "报文类型",
+                "nonce_str"     => "随机码",
+                "timestamp"     => "时间戳",
+                "auth_scope"    => "授权类型",
+                "callback_type" => "回调类型",
+                "callback_url"  => "回调地址",
+                "sign"          => "签名数据",
+            ],
+        ],
+
+        'code'   => [
+            'in'  => [
+                "msg_type"      => "报文类型",
+                "msg_txn_code"  => "交易代码",
+                "msg_crrltn_id" => "消息关联号",
+                "msg_sender"    => "报文发送方",
+                "issue_user_id" => "发券平台渠道用户id",//领取微信活动的券码送微信的openid
+                "event_no"      => "活动号",
+                "mobile"        => "手机号",
+            ],
+            'out' => [
+                "code" => "优惠券",
+                "sign" => "签名数据",
+            ],
+        ],
+        //去联盟领券
+        '106040' => [
+            'in'  => [
+                "msg_type"           => "报文类型",
+                "msg_txn_code"       => "交易代码",
+                "msg_crrltn_id"      => "消息关联号",
+                "msg_flg"            => "报文请求应答标志",
+                "msg_sender"         => "报文发送方",
+                "msg_time"           => "报文日期",
+                "msg_sys_sn"         => "平台流水号",
+                "msg_ver"            => "报文版本号",
+                "shop_no"            => "门店号",
+                "term_no"            => "终端号",
+                "req_serial_no"      => "撤销流水号",
+                "orig_req_serial_no" => "原始销账流水号",
+                "trans_crrltn_no"    => "交易关联流水号",
+                'sp_chnl_no'         => "渠道方",
+                'sp_order_no'        => "第三方订单号",
+                'order_date'         => "订单日期",
+                'event_no'           => "活动号",
+                'issue_user_id'      => "发券平台渠道用户id",
+            ],
+            'out' => [
+                "msg_type"      => "报文类型",
+                "msg_txn_code"  => "交易代码",
+                "msg_crrltn_id" => "消息关联号",
+                "msg_flg"       => "报文请求应答标志",
+                "msg_sender"    => "报文发送方",
+                "msg_time"      => "报文日期",
+                "msg_sys_sn"    => "平台流水号",
+                "msg_ver"       => "报文版本号",
+                "msg_rsp_code"  => "响应码",
+                "msg_rsp_desc"  => "响应码描述",
+                "sign"          => "签名数据",
+            ],
+        ],
+
+        //回调核销信息
+        '012100' => [
+            'in' => [
+                "msg_type"         => "报文类型",
+                "msg_txn_code"     => "交易代码",
+                "msg_crrltn_id"    => "消息关联号",
+                "msg_flg"          => "报文请求应答标志",
+                "msg_sender"       => "报文发送方",
+                "msg_time"         => "报文日期",
+                "msg_sys_sn"       => "平台流水号",
+                "msg_ver"          => "报文版本号",
+                "mchnt_no"         => "商户号",
+                "term_no"          => "终端号",
+                "shop_no"          => "门店号",
+                "req_serial_no"    => "销券流水号",
+                "coupon_no"        => "凭证号",
+                "coupon_type"      => "凭证类型",
+                "enc_card_no"      => "加密卡号",
+                "acq_term_sn"      => "受理终端流水号",
+                "refer_no"         => "检索参考号",
+                "sett_date"        => "清算日期",
+                "txn_date"         => "交易日期",
+                "txn_time"         => "交易时间",
+                "orig_amt"         => "原始金额",
+                "discount_amt"     => "优惠的金额",
+                "pay_amt"          => "支付金额",
+                "pay_mode"         => "支付方式",
+                "event_no"         => "活动号",
+                "trans_crrltn_no"  => "交易关联流水号",
+                "equity_no"        => "权益号",
+                "order_no"         => "订单号",
+                "point"            => "使用的积分数量",
+                "point_amt"        => "积分抵扣金额",
+                "point_account_no" => "积分账户号",
+                "mkt_uuid"         => "联盟码申请流水号",
+                "custom_info"      => "第三方自定义域",
             ],
         ],
 

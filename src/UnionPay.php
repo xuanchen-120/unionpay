@@ -9,7 +9,8 @@ use XuanChen\Coupon\Coupon;
 use XuanChen\UnionPay\Action\Query;
 use XuanChen\UnionPay\Action\Redemption;
 use XuanChen\UnionPay\Action\Reversal;
-use XuanChen\UnionPay\Action\Skyxu;
+use Illuminate\Support\Str;
+use XuanChen\UnionPay\Action\GetCode;
 
 /**
  * 银联入口
@@ -26,7 +27,7 @@ class UnionPay extends Init
     public function setParams($params)
     {
         $this->params       = $params;
-        $this->sign         = $params['sign'];
+        $this->sign         = $params['sign'] ?? '';
         $this->msg_txn_code = $params['msg_txn_code'] ?? '';
     }
 
@@ -63,25 +64,27 @@ class UnionPay extends Init
         //设置基础数据
         $this->getOutBaseData();
 
-        try {
-            //校验数据
-            $this->checkInData();
-            //查询是否是幂等 就是重复查询
-            $this->idempotent();
-            //入库请求参数
-            $this->InputData();
-            //返回值
-            $this->out_data();
-            //更新数据
-            $this->updateOutData();
-        } catch (\Exception $e) {
-
-            $this->outdata['msg_rsp_code'] = '9999';
-            $this->outdata['msg_rsp_desc'] = $e->getMessage();
-            if (empty($this->model->out_source)) {
-                $this->updateOutData();
-            }
-        }
+        //        try {
+        //校验数据
+        $this->checkInData();
+        //查询是否是幂等 就是重复查询
+        $this->idempotent();
+        //入库请求参数
+        $this->InputData();
+        //返回值
+        $this->out_data();
+        //更新数据
+        $this->updateOutData();
+        //        } catch (\Exception $e) {
+        //
+        //            $this->outdata['msg_rsp_code'] = '9999';
+        //            $this->outdata['msg_rsp_desc'] = $e->getMessage() ?? '未知错误';
+        //            if (empty($this->model->out_source)) {
+        //
+        //                $this->updateOutData();
+        //
+        //            }
+        //        }
 
     }
 
@@ -110,6 +113,16 @@ class UnionPay extends Init
                         $action->start();
                         $this->outdata = $action->back();
                         break;
+                    case 'code'://领券
+                        $action = new GetCode($this);
+                        $action->start();
+                        $this->outdata = $action->back();
+                        break;
+                    case '012100'://领券
+                        $action = new UpdateCode($this);
+                        $action->start();
+                        $this->outdata = $action->back();
+                        break;
                     default:
                         break;
                 }
@@ -127,10 +140,20 @@ class UnionPay extends Init
      * @Author: 玄尘
      * @Date  : 2020/9/30 8:46
      */
-    private function InputData()
+    public function InputData()
     {
+        if (!$this->msg_txn_code) {
+            throw new \Exception('获取基础数据失败');
+        }
+
+        $regular = config('unionpay.regular');
+        if (!isset($regular[$this->msg_txn_code])) {
+            throw new \Exception('获取基础数据失败');
+        }
+
         //获取基础数据
-        $base = config('unionpay.regular')[$this->msg_txn_code];
+        $base = $regular[$this->msg_txn_code];
+
         $data = [];
         //循环获取入库数据
         foreach ($this->params as $key => $param) {
@@ -140,6 +163,7 @@ class UnionPay extends Init
                 $data['in_source'][$key] = $param;
             }
         }
+
         $this->model = UnionpayLog::create($data);
 
         if (empty($this->model)) {
@@ -200,7 +224,7 @@ class UnionPay extends Init
         $basics = [
             "msg_type"      => $this->msg_type,
             "msg_txn_code"  => $this->msg_txn_code,
-            "msg_crrltn_id" => $this->params['msg_crrltn_id'],
+            "msg_crrltn_id" => $this->params['msg_crrltn_id'] ?? '',
             "msg_flg"       => 1,
             "msg_sender"    => $this->msg_sender,
             "msg_time"      => now()->format('YmdHis'),
@@ -241,6 +265,27 @@ class UnionPay extends Init
                     'msg_ver' => 0.1,
                 ]);
                 break;
+            case 'openid':
+                $basics = [
+                    "msg_sender"    => $this->msg_sender,
+                    "nonce_str"     => Str::random(32),
+                    "timestamp"     => now()->timestamp,
+                    "auth_scope"    => 'base_info',
+                    "callback_type" => $this->params['callback_type'] ?? '',
+                    "callback_url"  => $this->params['callback_url'] ?? '',
+                ];
+                break;
+            case '106040':
+                $basics = [];
+                break;
+            case 'code':
+                $basics = [];
+                break;
+            case '012100':
+                $basics = array_merge($basics, [
+                    'msg_ver' => 0.1,
+                ]);
+                break;
             default:
                 break;
         }
@@ -256,21 +301,30 @@ class UnionPay extends Init
      */
     public function idempotent()
     {
-        $this->info = UnionpayLog::where('req_serial_no', $this->params['req_serial_no'])
-                                 ->where('msg_txn_code', $this->msg_txn_code)
-                                 ->where('status', 1)
-                                 ->latest()
-                                 ->first();
+        //没有req_serial_no 就是本时生活为了获取封装数据
+        if (isset($this->params['req_serial_no'])) {
+            $this->info = UnionpayLog::where('req_serial_no', $this->params['req_serial_no'])
+                                     ->where('msg_txn_code', $this->msg_txn_code)
+                                     ->where('status', 1)
+                                     ->latest()
+                                     ->first();
+        }
+
     }
 
-    //更新返回值
+    /**
+     * Notes: 更新返回值
+     * @Author: 玄尘
+     * @Date  : 2020/12/15 15:26
+     * @throws \Exception
+     */
     public function updateOutData()
     {
         $this->outdata['sign'] = $this->getSign();
         //如果有入库模型
         if ($this->model) {
             $this->model->out_source = $this->outdata;
-            if ($this->outdata['msg_rsp_code'] != '0000') {
+            if (isset($this->outdata['msg_rsp_code']) && $this->outdata['msg_rsp_code'] != '0000') {
                 $this->model->status = 0;
             }
             $this->model->save();

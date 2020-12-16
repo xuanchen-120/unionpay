@@ -5,6 +5,7 @@ namespace XuanChen\UnionPay\Action;
 use App\Exceptions\ApiException;
 use App\Exceptions\ApiUnionpayException;
 use App\Models\Log as LogModel;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 
 class Init
@@ -117,14 +118,10 @@ class Init
      */
     public function getSign($out = true)
     {
-        if (!$this->isSign) {
-            return '';
-        }
-
         $signStr     = $this->getSignString($out);
         $private_key = $this->getPrivate();
+        $privKeyId   = openssl_pkey_get_private($private_key);
 
-        $privKeyId = openssl_pkey_get_private($private_key);
         if (!$privKeyId) {
             throw new \Exception('私钥格式有误');
         }
@@ -156,7 +153,7 @@ class Init
         }
 
         if (empty($params)) {
-            throw new \Exception('缺少数据');
+            throw new \Exception('获取校验数据失败，缺少数据');
         }
 
         ksort($params);
@@ -244,6 +241,42 @@ class Init
         }
 
         return \Response::json($this->outdata, 200, $header);
+    }
+
+    /**
+     * Notes: 到银联取优惠券
+     * @Author: 玄尘
+     * @Date  : 2020/12/15 11:23
+     * @param $portUrl
+     * @param $paramArray
+     * @return array|mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function sendPost($portUrl, $paramArray)
+    {
+        $client = new Client();
+
+        try {
+            $response = $client->request(
+                'POST',
+                $portUrl,
+                [
+                    'form_params' => $paramArray,
+                    'http_errors' => false,
+                    'timeout'     => 1.5,
+                ]
+            );
+            if ($response->getStatusCode() == 200) {
+                $body = $response->getBody();
+
+                return json_decode($body->getContents(), true);
+            } else {
+                return ['code' => 0, 'message' => '接口错误 Post'];
+            }
+        } catch (\Exception $exception) {
+            return ['code' => 0, 'message' => $exception->getMessage()];
+        }
+
     }
 
 }
