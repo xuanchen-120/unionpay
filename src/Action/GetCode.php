@@ -28,8 +28,9 @@ class GetCode implements Contracts
     public function start()
     {
         try {
-            $url    = config('unionpay.unionpay_url.code');
-            $data_c = [
+            $url = config('unionpay.unionpay_url.code');
+
+            $data = [
                 'msg_type'      => 10,
                 'msg_txn_code'  => '106040',
                 'msg_crrltn_id' => $this->unionpay->params['msg_crrltn_id'],
@@ -39,9 +40,6 @@ class GetCode implements Contracts
                 'msg_sys_sn'    => Helper::orderid(20),
                 'msg_ver'       => '0.2',
                 'sign_type'     => 'RSA',
-            ];
-
-            $data_f = [
                 'sp_chnl_no'    => config('unionpay.msg_sender'),
                 'sp_order_no'   => Helper::orderid(20),
                 'order_date'    => Carbon::now()->format('Ymd'),
@@ -53,24 +51,24 @@ class GetCode implements Contracts
             $app = app('xuanchen.unionpay');
             $app->setSign(false);
             //设置入参
-            $app->setParams($data_c);
+            $app->setParams($data);
             //校验入参
             $app->checkInData();
 
             $app->params['sign'] = $app->getSign(false);
-            $app->params         = array_merge($app->params, $data_f);
 
             //入库
             $app->InputData();
 
+            //申请发券
             $ret          = $app->sendPost($url, $app->params);
             $app->outdata = $ret;
             $app->sign    = $ret['sign'] ?? '';
-            $app->updateOutData();
 
             if (isset($ret['code']) && $ret['code'] == 0) {
-                $this->unionpay->outdata['msg_rsp_code'] = '9999';
-                $this->unionpay->outdata['msg_rsp_desc'] = $ret['message'];
+                $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_code'] = '9999';
+                $app->outdata['msg_rsp_desc'] = $this->unionpay->outdata['msg_rsp_desc'] = $ret['message'];
+                $app->updateOutData(false);
 
                 return;
             }
@@ -81,7 +79,7 @@ class GetCode implements Contracts
                 $checksign = $app->checkSign(false, false);
                 if ($checksign !== true) {
                     $this->unionpay->outdata['msg_rsp_code'] = 9996;
-                    $this->unionpay->outdata['msg_rsp_desc'] = '获取优惠券数据验签失败';
+                    $this->unionpay->outdata['msg_rsp_desc'] = '获取优惠券数据验签失败。';
 
                     return;
                 }

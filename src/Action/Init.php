@@ -152,15 +152,33 @@ class Init
             $params = $this->params;
         }
 
+        //需要校验的字段
+        $checksigns  = config('unionpay.checksign');
+        $checkparams = $params;
+
+        if (isset($checksigns[$this->msg_txn_code])) {
+            $checkfrom = $out ? 'out' : 'in';
+
+            if ($checksigns[$this->msg_txn_code] && isset($checksigns[$this->msg_txn_code][$checkfrom])) {
+                $checkparams = [];
+                foreach ($params as $key => $param) {
+                    if (in_array($key, $checksigns[$this->msg_txn_code][$checkfrom])) {
+                        $checkparams[$key] = $param;
+                    }
+                }
+            }
+        }
+
+        info($this->msg_txn_code . $out . json_encode($checkparams));
         //            $params = array_filter($this->params);
-        $params = collect($this->params)->filter(function ($value, $key) {
+        $params = collect($checkparams)->filter(function ($value, $key) {
             return strlen($value) > 0;
         });
 
         $params = $params->all();
 
         if (empty($params)) {
-            throw new \Exception('获取校验数据失败，缺少数据');
+            throw new \Exception('获取校验数据失败，缺少数据..');
         }
 
         ksort($params);

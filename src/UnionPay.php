@@ -11,6 +11,7 @@ use XuanChen\UnionPay\Action\Redemption;
 use XuanChen\UnionPay\Action\Reversal;
 use Illuminate\Support\Str;
 use XuanChen\UnionPay\Action\GetCode;
+use XuanChen\UnionPay\Action\UpdateCode;
 
 /**
  * 银联入口
@@ -91,6 +92,7 @@ class UnionPay extends Init
     //处理流程
     public function out_data()
     {
+
         //是幂等
         if ($this->info && !empty($this->info->out_source)) {
             $this->outdata = $this->info->out_source;
@@ -118,7 +120,7 @@ class UnionPay extends Init
                         $action->start();
                         $this->outdata = $action->back();
                         break;
-                    case '012100'://领券
+                    case '012100'://核销通知
                         $action = new UpdateCode($this);
                         $action->start();
                         $this->outdata = $action->back();
@@ -316,12 +318,16 @@ class UnionPay extends Init
     /**
      * Notes: 更新返回值
      * @Author: 玄尘
-     * @Date  : 2020/12/15 15:26
+     * @Date  : 2020/12/21 14:14
+     * @param bool $sign false 为银联返回数据 不校验
      * @throws \Exception
      */
-    public function updateOutData()
+    public function updateOutData($sign = true)
     {
-        $this->outdata['sign'] = $this->getSign();
+        if ($sign) {
+            $this->outdata['sign'] = $this->getSign();
+        }
+
         //如果有入库模型
         if ($this->model) {
             $this->model->out_source = $this->outdata;

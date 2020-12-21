@@ -42,7 +42,7 @@ class IndexController extends Controller
         $inputs = $request->all();
         $app    = app('xuanchen.unionpay');
         $nosign = config('unionpay.nosign');
-        info(json_encode($inputs));
+
         if (in_array($inputs['msg_txn_code'], $nosign)) {
             info($inputs['msg_txn_code']);
             $app->setSign(false);
