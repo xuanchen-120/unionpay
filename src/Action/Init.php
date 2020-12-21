@@ -147,10 +147,17 @@ class Init
     public function getSignString($out = false)
     {
         if ($out) {
-            $params = array_filter($this->outdata);
+            $params = $this->outdata;
         } else {
-            $params = array_filter($this->params);
+            $params = $this->params;
         }
+
+        //            $params = array_filter($this->params);
+        $params = collect($this->params)->filter(function ($value, $key) {
+            return strlen($value) > 0;
+        });
+
+        $params = $params->all();
 
         if (empty($params)) {
             throw new \Exception('获取校验数据失败，缺少数据');
@@ -263,9 +270,10 @@ class Init
                 [
                     'form_params' => $paramArray,
                     'http_errors' => false,
-                    'timeout'     => 1.5,
+                    'timeout'     => 3,
                 ]
             );
+
             if ($response->getStatusCode() == 200) {
                 $body = $response->getBody();
 

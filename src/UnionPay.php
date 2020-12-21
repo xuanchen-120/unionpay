@@ -273,6 +273,7 @@ class UnionPay extends Init
                     "auth_scope"    => 'base_info',
                     "callback_type" => $this->params['callback_type'] ?? '',
                     "callback_url"  => $this->params['callback_url'] ?? '',
+                    "right_id"      => $this->params['right_id'],
                 ];
                 break;
             case '106040':

@@ -20,7 +20,7 @@ class CreateUnionpayCouponsTable extends Migration
             $table->string('openid');
             $table->string('coupon_no')->comment('活动号');
             $table->string('event_no');
-            $table->boolean('status');
+            $table->boolean('status')->default(1);
             $table->decimal('orig_amt', 10, 2)->nullable()->comment('原始金额');
             $table->decimal('discount_amt', 10, 2)->nullable()->comment('优惠的金额');
             $table->decimal('pay_amt', 10, 2)->nullable()->comment('支付金额');
