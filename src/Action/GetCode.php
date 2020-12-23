@@ -41,7 +41,7 @@ class GetCode implements Contracts
                 'msg_ver'       => '0.2',
                 'sign_type'     => 'RSA',
                 'sp_chnl_no'    => config('unionpay.msg_sender'),
-                'sp_order_no'   => Helper::orderid(20),
+                'sp_order_no'   => $this->unionpay->params['sp_order_no'],
                 'order_date'    => Carbon::now()->format('Ymd'),
                 'event_no'      => $this->unionpay->params['event_no'],
                 'buy_quantity'  => 1,
@@ -65,6 +65,8 @@ class GetCode implements Contracts
             $app->outdata = $ret;
             $app->sign    = $ret['sign'] ?? '';
 
+            info(json_encode($ret));
+
             if (isset($ret['code']) && $ret['code'] == 0) {
                 $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_code'] = '9999';
                 $app->outdata['msg_rsp_desc'] = $this->unionpay->outdata['msg_rsp_desc'] = $ret['message'];
@@ -76,17 +78,19 @@ class GetCode implements Contracts
             //成功
             if (isset($ret['msg_rsp_code']) && $ret['msg_rsp_code'] == '0000') {
                 $app->setSign(true);
-                $checksign = $app->checkSign(false, false);
+                $checksign = $app->checkSign(true, false);
                 if ($checksign !== true) {
-                    $this->unionpay->outdata['msg_rsp_code'] = 9996;
-                    $this->unionpay->outdata['msg_rsp_desc'] = '获取优惠券数据验签失败。';
+                    $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_code'] = 9996;
+                    $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_desc'] = '获取优惠券数据验签失败。';
+                    $app->updateOutData(false);
 
                     return;
                 }
 
                 if (!isset($ret['coupon_list']) || !isset($ret['coupon_list'][0]['coupon_no'])) {
-                    $this->unionpay->outdata['msg_rsp_code'] = 9996;
-                    $this->unionpay->outdata['msg_rsp_desc'] = '没有找到优惠券信息。';
+                    $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_code'] = 9996;
+                    $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_desc'] = '没有找到优惠券信息。';
+                    $app->updateOutData(false);
 
                     return;
                 }
@@ -105,8 +109,9 @@ class GetCode implements Contracts
 
                 $info = UnionpayCoupon::create($coupon);
                 if (!$info) {
-                    $this->unionpay->outdata['msg_rsp_code'] = '9999';
-                    $this->unionpay->outdata['msg_rsp_desc'] = '券码入库失败';
+                    $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_code'] = '9999';
+                    $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_desc'] = '券码入库失败';
+                    $app->updateOutData(false);
 
                     return;
                 }
@@ -118,14 +123,19 @@ class GetCode implements Contracts
                     'expire_date_time'    => $info->expire_date_time,
                     'mobile'              => $info->mobile,
                 ]);
+                $app->updateOutData(false);
             } else {
-                $this->unionpay->outdata['msg_rsp_code'] = $ret['msg_rsp_code'];
-                $this->unionpay->outdata['msg_rsp_desc'] = $ret['msg_rsp_desc'];
+                $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_code'] = $ret['msg_rsp_code'];
+                $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_desc'] = $ret['msg_rsp_desc'];
+                $app->updateOutData(false);
+
             }
 
         } catch (\Exception $e) {
-            $this->unionpay->outdata['msg_rsp_code'] = '9999';
-            $this->unionpay->outdata['msg_rsp_desc'] = $e->getMessage();
+            $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_code'] = '9999';
+            $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_desc'] = $e->getMessage();
+            $app->updateOutData(false);
+
         }
 
     }

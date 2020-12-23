@@ -282,7 +282,9 @@ class UnionPay extends Init
                 $basics = [];
                 break;
             case 'code':
-                $basics = [];
+                $basics = array_merge($basics, [
+                    'msg_ver' => 0.1,
+                ]);
                 break;
             case '012100':
                 $basics = array_merge($basics, [

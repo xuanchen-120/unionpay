@@ -41,7 +41,14 @@ class Redemption implements Contracts
             //获取银联渠道
             $user = User::find($this->unionpay->agent_id);
 
-            $coupon = Coupon::Redemption($user, $query->mkt_code, $this->unionpay->params['orig_amt'] / 100, $this->unionpay->outlet_id, '');
+            $coupon = Coupon::Redemption(
+                $user,
+                $query->mkt_code,
+                $this->unionpay->params['orig_amt'] / 100,
+                $this->unionpay->outlet_id,
+                ''
+            );
+            
             if (!is_array($coupon)) {
                 $this->unionpay->outdata['msg_rsp_code'] = '9999';
                 $this->unionpay->outdata['msg_rsp_desc'] = $coupon;

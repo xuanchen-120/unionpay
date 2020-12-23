@@ -7,6 +7,7 @@ use App\Exceptions\ApiUnionpayException;
 use App\Models\Log as LogModel;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Exception;
 
 class Init
 {
@@ -296,11 +297,17 @@ class Init
                 $body = $response->getBody();
 
                 return json_decode($body->getContents(), true);
-            } else {
-                return ['code' => 0, 'message' => '接口错误 Post'];
             }
+
+            throw new \Exception('接口错误,code:' . $response->getStatusCode());
+
         } catch (\Exception $exception) {
-            return ['code' => 0, 'message' => $exception->getMessage()];
+            $message = $exception->getMessage();
+            if (strpos($message, "cURL error 28")) {
+                $message = "领取失败，超时。";
+            }
+
+            return ['code' => 0, 'message' => $message];
         }
 
     }
