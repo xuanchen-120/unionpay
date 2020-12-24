@@ -8,6 +8,7 @@ use Encore\Admin\Grid;
 use XuanChen\UnionPay\Models\UnionpayLog;
 use XuanChen\UnionPay\Renderable\InData;
 use XuanChen\UnionPay\Renderable\OutData;
+use XuanChen\UnionPay\Models\UnionpayCoupon;
 
 class CouponController extends AdminController
 {
@@ -44,7 +45,6 @@ class CouponController extends AdminController
              ->using(config('unionpay.type'))
              ->label();
 
-        //        $grid->column('msg_crrltn_id', '消息关联号');
         $grid->column('msg_time', '报文日期');
         $grid->column('mkt_code', '券码');
         $grid->column('msg_sys_sn', '平台流水号');
@@ -76,6 +76,11 @@ class CouponController extends AdminController
         });
 
         return $grid;
+    }
+
+    public function detail()
+    {
+
     }
 
 }

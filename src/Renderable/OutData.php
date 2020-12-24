@@ -16,6 +16,11 @@ class OutData implements Renderable
 
         if (is_array($out_source) && count($out_source) > 1) {
             unset($out_source['sign']);
+            foreach ($out_source as &$item) {
+                if (is_array($item)) {
+                    $item = json_encode($item);
+                }
+            }
             $table = new Table(['名称', '值'], $out_source, ['panel ', 'panel-success']);
 
             return $table->render();

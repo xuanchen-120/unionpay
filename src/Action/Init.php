@@ -153,24 +153,27 @@ class Init
             $params = $this->params;
         }
 
-        //需要校验的字段
-        $checksigns  = config('unionpay.checksign');
         $checkparams = $params;
 
-        if (isset($checksigns[$this->msg_txn_code])) {
-            $checkfrom = $out ? 'out' : 'in';
+        if (isset($this->params['msg_ver']) && $this->params['msg_ver'] == '0.2') {
+            //需要校验的字段
+            $checksigns = config('unionpay.checksign');
 
-            if ($checksigns[$this->msg_txn_code] && isset($checksigns[$this->msg_txn_code][$checkfrom])) {
-                $checkparams = [];
-                foreach ($params as $key => $param) {
-                    if (in_array($key, $checksigns[$this->msg_txn_code][$checkfrom])) {
-                        $checkparams[$key] = $param;
+            if (isset($checksigns[$this->msg_txn_code])) {
+                $checkfrom = $out ? 'out' : 'in';
+
+                if ($checksigns[$this->msg_txn_code] && isset($checksigns[$this->msg_txn_code][$checkfrom])) {
+                    $checkparams = [];
+                    foreach ($params as $key => $param) {
+                        if (in_array($key, $checksigns[$this->msg_txn_code][$checkfrom])) {
+                            $checkparams[$key] = $param;
+                        }
                     }
                 }
             }
+
         }
 
-        info($this->msg_txn_code . $out . json_encode($checkparams));
         //            $params = array_filter($this->params);
         $params = collect($checkparams)->filter(function ($value, $key) {
             return strlen($value) > 0;
@@ -303,6 +306,7 @@ class Init
 
         } catch (\Exception $exception) {
             $message = $exception->getMessage();
+
             if (strpos($message, "cURL error 28")) {
                 $message = "领取失败，超时。";
             }

@@ -21,7 +21,7 @@ class UnionpayLog extends Model
 
     public function coupon()
     {
-        return $this->hasOne(Coupon::class, 'redemptionCode', 'mkt_code');
+        return $this->hasOne(UnionpayCoupon::class, 'redemptionCode', 'mkt_code');
     }
 
 }

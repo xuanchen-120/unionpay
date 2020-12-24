@@ -10,7 +10,7 @@ Route::group([
     'middleware' => config('admin.route.middleware'),
 ], function (Router $router) {
     $router->resource('unionpays', 'IndexController');
-    $router->resource('unionpays/coupons', 'CouponController');
+    $router->resource('unionpaycoupons', 'CouponController');
 });
 
 //手机端

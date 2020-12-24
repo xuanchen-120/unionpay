@@ -12,4 +12,9 @@ class UnionpayCoupon extends Model
         self::STATUS_USED => '已使用',
     ];
 
+    public function log()
+    {
+        
+    }
+
 }
