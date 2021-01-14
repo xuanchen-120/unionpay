@@ -48,7 +48,7 @@ class Redemption implements Contracts
                 $this->unionpay->outlet_id,
                 ''
             );
-            
+
             if (!is_array($coupon)) {
                 $this->unionpay->outdata['msg_rsp_code'] = '9999';
                 $this->unionpay->outdata['msg_rsp_desc'] = $coupon;

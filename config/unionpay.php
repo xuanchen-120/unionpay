@@ -3,13 +3,18 @@
 return [
     //添加日志
     'log'          => true,
+    //微信测获取优惠券地址
     'unionpay_url' => [
         'code' => 'http://dev.spserv.yxlm.chinaums.com:25941/spapigateway/v2/markting/sp/coupon/order/get',
     ],
     //不进行sign校验
     'nosign'       => [
-        'openid',
-        'code',
+        //        '002025',//查询
+        //        '002100',//核销
+        //        '002101',//冲正
+        //        '002102',//撤销
+        'openid',//获取openid 封装数据
+        'code',//微信测获取优惠券
     ],
     //分配的渠道号
     'msg_sender'   => '660134',
@@ -37,6 +42,7 @@ return [
             'public' => storage_path('cert/unionpay/public_rsa.pem'),
         ],
     ],
+    //接口类型
     'type'         => [
         '002025' => '查询',
         '002100' => '交易',
@@ -47,6 +53,7 @@ return [
         '012100' => '核销通知',
         'code'   => '生活请求发券',
     ],
+    //日志类型对应
     'log_type'     => [
         '002025' => 'query',
         '002100' => 'freezecoupon',
@@ -58,7 +65,7 @@ return [
     ],
     // 签名检查数据  没有为全数据
     'checksign'    => [
-        '106040' => [
+        'default' => [
             'in'  => [
                 'msg_type',
                 'msg_txn_code',
@@ -83,7 +90,32 @@ return [
                 'msg_rsp_desc',
             ],
         ],
-        '012100' => [
+        '106040'  => [
+            'in'  => [
+                'msg_type',
+                'msg_txn_code',
+                'msg_crrltn_id',
+                'msg_flg',
+                'msg_sender',
+                'msg_time',
+                'msg_sys_sn',
+                'msg_ver',
+                'sign_type',
+            ],
+            'out' => [
+                'msg_type',
+                'msg_txn_code',
+                'msg_crrltn_id',
+                'msg_flg',
+                'msg_sender',
+                'msg_sys_sn',
+                'msg_time',
+                'msg_ver',
+                'msg_rsp_code',
+                'msg_rsp_desc',
+            ],
+        ],
+        '012100'  => [
             'in'  => [
                 'msg_type',
                 'msg_txn_code',

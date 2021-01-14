@@ -65,34 +65,33 @@ class UnionPay extends Init
         //设置基础数据
         $this->getOutBaseData();
 
-        //        try {
-        //校验数据
-        $this->checkInData();
-        //查询是否是幂等 就是重复查询
-        $this->idempotent();
-        //入库请求参数
-        $this->InputData();
-        //返回值
-        $this->out_data();
-        //更新数据
-        $this->updateOutData();
-        //        } catch (\Exception $e) {
-        //
-        //            $this->outdata['msg_rsp_code'] = '9999';
-        //            $this->outdata['msg_rsp_desc'] = $e->getMessage() ?? '未知错误';
-        //            if (empty($this->model->out_source)) {
-        //
-        //                $this->updateOutData();
-        //
-        //            }
-        //        }
+        try {
+            //校验数据
+            $this->checkInData();
+            //查询是否是幂等 就是重复查询
+            $this->idempotent();
+            //入库请求参数
+            $this->InputData();
+            //返回值
+            $this->out_data();
+            //更新数据
+            $this->updateOutData();
+        } catch (\Exception $e) {
+
+            $this->outdata['msg_rsp_code'] = '9999';
+            $this->outdata['msg_rsp_desc'] = $e->getMessage() ?? '未知错误';
+            if (empty($this->model->out_source)) {
+
+                $this->updateOutData();
+
+            }
+        }
 
     }
 
     //处理流程
     public function out_data()
     {
-
         //是幂等
         if ($this->info && !empty($this->info->out_source)) {
             $this->outdata = $this->info->out_source;
@@ -145,12 +144,13 @@ class UnionPay extends Init
     public function InputData()
     {
         if (!$this->msg_txn_code) {
-            throw new \Exception('获取基础数据失败');
+            throw new \Exception('获取基础数据失败.');
         }
 
         $regular = config('unionpay.regular');
+
         if (!isset($regular[$this->msg_txn_code])) {
-            throw new \Exception('获取基础数据失败');
+            throw new \Exception('获取基础数据失败..');
         }
 
         //获取基础数据
@@ -161,10 +161,10 @@ class UnionPay extends Init
         foreach ($this->params as $key => $param) {
             if (in_array($key, $base)) {
                 $data[$key] = $param;
-            } else {
-                $data['in_source'][$key] = $param;
             }
         }
+
+        $data['in_source'] = $this->params;
 
         $this->model = UnionpayLog::create($data);
 
@@ -180,6 +180,7 @@ class UnionPay extends Init
      */
     public function checkInData()
     {
+
         try {
             //验签
             $res = $this->checkSign(false, false);
@@ -242,8 +243,8 @@ class UnionPay extends Init
                     "discount"    => 0,
                     "actual_amt"  => 0,
                     "pos_display" => "",
-                    //                    "pos_receipt" => config('unionpay.pos_receipt'),
-                    //                    "pos_ad"      => config('unionpay.pos_ad'),
+                    "pos_receipt" => config('unionpay.pos_receipt'),
+                    "pos_ad"      => config('unionpay.pos_ad'),
                     "pos_mkt_ad"  => config('unionpay.pos_receipt'),
                 ]);
                 break;
@@ -256,8 +257,13 @@ class UnionPay extends Init
                     'pay_amt'      => $this->params['pay_amt'],
                     'serv_chg'     => config('unionpay.serv_chg'),
                     'commission'   => config('unionpay.commission'),
+                    'pos_receipt'  => "原价" . bcdiv($this->params['orig_amt'], 100, 2) . "元，" .
+                                      "优惠券抵扣" . bcdiv($this->params['discount_amt'], 100, 2) . "元，" .
+                                      "实付{$this->params['pay_amt']}元",
                     'event_no'     => '',//活动号 直接为空就可以
+
                 ]);
+
                 break;
             //冲正
             case '002101':
@@ -326,7 +332,7 @@ class UnionPay extends Init
      */
     public function updateOutData($sign = true)
     {
-        if ($sign) {
+        if ($sign && !isset($this->outdata['sign'])) {
             $this->outdata['sign'] = $this->getSign();
         }
 

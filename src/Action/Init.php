@@ -59,8 +59,10 @@ class Init
      * Notes: 验签
      * @Author: 玄尘
      * @Date  : 2020/9/30 8:39
+     * @param bool  $out  是否是返回的数据 true 使用自己的证书
      * @param false $self 是否是自己的证书
      * @return bool|string
+     * @throws \Exception
      */
     public function checkSign($out = true, $self = false)
     {
@@ -93,7 +95,7 @@ class Init
      * Notes: 校验sign
      * @Author: 玄尘
      * @Date  : 2020/10/13 15:21
-     * @param       $data
+     * @param       $sign
      * @param false $types
      * @return int|string
      */
@@ -113,13 +115,14 @@ class Init
      * Notes: 签名
      * @Author: 玄尘
      * @Date  : 2020/10/9 15:52
-     * @param bool $self
+     * @param bool $out
      * @return string
      * @throws \Exception
      */
     public function getSign($out = true)
     {
-        $signStr     = $this->getSignString($out);
+        $signStr = $this->getSignString($out);
+
         $private_key = $this->getPrivate();
         $privKeyId   = openssl_pkey_get_private($private_key);
 
@@ -156,18 +159,17 @@ class Init
         $checkparams = $params;
 
         if (isset($this->params['msg_ver']) && $this->params['msg_ver'] == '0.2') {
-            //需要校验的字段
+            //配置的校验的字段
             $checksigns = config('unionpay.checksign');
+            //获取检验数据
+            $thischecks = isset($checksigns[$this->msg_txn_code]) ? $checksigns[$this->msg_txn_code] : $checksigns['default'];
+            $checkfrom  = $out ? 'out' : 'in';
 
-            if (isset($checksigns[$this->msg_txn_code])) {
-                $checkfrom = $out ? 'out' : 'in';
-
-                if ($checksigns[$this->msg_txn_code] && isset($checksigns[$this->msg_txn_code][$checkfrom])) {
-                    $checkparams = [];
-                    foreach ($params as $key => $param) {
-                        if (in_array($key, $checksigns[$this->msg_txn_code][$checkfrom])) {
-                            $checkparams[$key] = $param;
-                        }
+            if ($thischecks && isset($thischecks[$checkfrom])) {
+                $checkparams = [];
+                foreach ($params as $key => $param) {
+                    if (in_array($key, $checksigns[$this->msg_txn_code][$checkfrom])) {
+                        $checkparams[$key] = $param;
                     }
                 }
             }
@@ -175,11 +177,13 @@ class Init
         }
 
         //            $params = array_filter($this->params);
-        $params = collect($checkparams)->filter(function ($value, $key) {
-            return strlen($value) > 0;
-        });
+        //        $checkparams = collect($checkparams);
 
-        $params = $params->all();
+        //        $params = $checkparams->filter(function ($value, $key) {
+        //            return strlen($value) > 0;
+        //        });
+
+        $params = $checkparams;
 
         if (empty($params)) {
             throw new \Exception('获取校验数据失败，缺少数据..');

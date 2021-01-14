@@ -5,7 +5,6 @@ namespace XuanChen\UnionPay\Controllers\Api;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
 use XuanChen\UnionPay\UnionPay;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Routing\Controller;
 
 class IndexController extends Controller
@@ -44,7 +43,6 @@ class IndexController extends Controller
         $nosign = config('unionpay.nosign');
 
         if (in_array($inputs['msg_txn_code'], $nosign)) {
-            info($inputs['msg_txn_code']);
             $app->setSign(false);
         }
         $app->setParams($inputs);
