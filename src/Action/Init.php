@@ -7,10 +7,12 @@ use App\Exceptions\ApiUnionpayException;
 use App\Models\Log as LogModel;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
-use Exception;
 
 class Init
 {
+
+    //环境
+    public $this_type;
 
     //传入的参数
     public $params;
@@ -55,14 +57,24 @@ class Init
     //是否需要验签
     public $isSign = true;
 
+    //银联公钥
+    public $union_public;
+
+    //亿时代公钥
+    public $ysd_public;
+
+    //亿时代私钥
+    public $ysd_private;
+
+    //微信侧领券地址
+    public $code_url;
+
     /**
      * Notes: 验签
      * @Author: 玄尘
      * @Date  : 2020/9/30 8:39
-     * @param bool  $out  是否是返回的数据 true 使用自己的证书
-     * @param false $self 是否是自己的证书
+     * @param  false  $self  是否是自己的证书
      * @return bool|string
-     * @throws \Exception
      */
     public function checkSign($out = true, $self = false)
     {
@@ -81,7 +93,7 @@ class Init
         $signStr = $this->getSignString($out);
 
         if ($pub_key_id) {
-            $result = (bool)openssl_verify($signStr, $sign, $pub_key_id);
+            $result = (bool) openssl_verify($signStr, $sign, $pub_key_id);
             openssl_free_key($pub_key_id);
         } else {
             throw new \Exception('私钥格式有误');
@@ -95,8 +107,8 @@ class Init
      * Notes: 校验sign
      * @Author: 玄尘
      * @Date  : 2020/10/13 15:21
-     * @param       $sign
-     * @param false $types
+     * @param         $data
+     * @param  false  $types
      * @return int|string
      */
     public function hexXbin($sign, $types = false)
@@ -115,14 +127,13 @@ class Init
      * Notes: 签名
      * @Author: 玄尘
      * @Date  : 2020/10/9 15:52
-     * @param bool $out
+     * @param  bool  $self
      * @return string
      * @throws \Exception
      */
     public function getSign($out = true)
     {
-        $signStr = $this->getSignString($out);
-
+        $signStr     = $this->getSignString($out);
         $private_key = $this->getPrivate();
         $privKeyId   = openssl_pkey_get_private($private_key);
 
@@ -156,16 +167,14 @@ class Init
             $params = $this->params;
         }
 
+        //需要校验的字段
+        $checksigns  = config('unionpay.checksign');
         $checkparams = $params;
 
-        if (isset($this->params['msg_ver']) && $this->params['msg_ver'] == '0.2') {
-            //配置的校验的字段
-            $checksigns = config('unionpay.checksign');
-            //获取检验数据
-            $thischecks = isset($checksigns[$this->msg_txn_code]) ? $checksigns[$this->msg_txn_code] : $checksigns['default'];
-            $checkfrom  = $out ? 'out' : 'in';
+        if (isset($checksigns[$this->msg_txn_code])) {
+            $checkfrom = $out ? 'out' : 'in';
 
-            if ($thischecks && isset($thischecks[$checkfrom])) {
+            if ($checksigns[$this->msg_txn_code] && isset($checksigns[$this->msg_txn_code][$checkfrom])) {
                 $checkparams = [];
                 foreach ($params as $key => $param) {
                     if (in_array($key, $checksigns[$this->msg_txn_code][$checkfrom])) {
@@ -173,17 +182,15 @@ class Init
                     }
                 }
             }
-
         }
 
+        info($this->msg_txn_code . $out . json_encode($checkparams));
         //            $params = array_filter($this->params);
-        //        $checkparams = collect($checkparams);
+        $params = collect($checkparams)->filter(function ($value, $key) {
+            return strlen($value) > 0;
+        });
 
-        //        $params = $checkparams->filter(function ($value, $key) {
-        //            return strlen($value) > 0;
-        //        });
-
-        $params = $checkparams;
+        $params = $params->all();
 
         if (empty($params)) {
             throw new \Exception('获取校验数据失败，缺少数据..');
@@ -199,7 +206,7 @@ class Init
     //获取私钥
     public function getPrivate()
     {
-        $private = config('unionpay.check.self.private');
+        $private = $this->ysd_private;
 
         if (!file_exists($private)) {
             throw new \Exception('缺少私钥文件');
@@ -211,10 +218,10 @@ class Init
     //获取公钥
     public function getPublic($self = false)
     {
-        $public = config('unionpay.check.unionpay.public');
+        $public = $this->union_public;
 
         if ($self) {
-            $public = config('unionpay.check.self.public');
+            $public = $this->ysd_public;
         }
 
         return file_get_contents($public);
@@ -304,18 +311,11 @@ class Init
                 $body = $response->getBody();
 
                 return json_decode($body->getContents(), true);
+            } else {
+                return ['code' => 0, 'message' => '接口错误 Post'];
             }
-
-            throw new \Exception('接口错误,code:' . $response->getStatusCode());
-
         } catch (\Exception $exception) {
-            $message = $exception->getMessage();
-
-            if (strpos($message, "cURL error 28")) {
-                $message = "领取失败，超时。";
-            }
-
-            return ['code' => 0, 'message' => $message];
+            return ['code' => 0, 'message' => $exception->getMessage()];
         }
 
     }

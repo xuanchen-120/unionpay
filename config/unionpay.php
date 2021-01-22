@@ -1,11 +1,18 @@
 <?php
 
 return [
+    //环境变量
+    'this_type'    => 'test',
     //添加日志
     'log'          => true,
-    //微信测获取优惠券地址
+    //获取微信侧的优惠券
     'unionpay_url' => [
-        'code' => 'http://dev.spserv.yxlm.chinaums.com:25941/spapigateway/v2/markting/sp/coupon/order/get',
+        'test' => [
+            'code' => 'http://dev.spserv.yxlm.chinaums.com:25941/spapigateway/v2/markting/sp/coupon/order/get',
+        ],
+        'dev'  => [
+            'code' => 'https://mktos.chinaums.com/spapigateway/v2/markting/sp/coupon/order/get',
+        ],
     ],
     //不进行sign校验
     'nosign'       => [
@@ -33,13 +40,25 @@ return [
     //佣金
     'commission'   => 0,
     //证书
-    'check'        => [
-        'self'     => [
-            'private' => storage_path('cert/unionpay/self/private_rsa.pem'),
-            'public'  => storage_path('cert/unionpay/self/public_rsa.pem'),
+    'certificate'  => [
+        'dev' => [
+            'ysd'   => [
+                'private' => storage_path('cert/unionpay/dev/ysd/private_rsa.pem'),
+                'public'  => storage_path('cert/unionpay/dev/ysd/public_rsa.pem'),
+            ],
+            'union' => [
+                'public' => storage_path('cert/unionpay/dev/union/public_rsa.pem'),
+            ],
         ],
-        'unionpay' => [
-            'public' => storage_path('cert/unionpay/public_rsa.pem'),
+
+        'test' => [
+            'ysd'   => [
+                'private' => storage_path('cert/unionpay/test/ysd/private_rsa.pem'),
+                'public'  => storage_path('cert/unionpay/test/ysd/public_rsa.pem'),
+            ],
+            'union' => [
+                'public' => storage_path('cert/unionpay/test/union/public_rsa.pem'),
+            ],
         ],
     ],
     //接口类型

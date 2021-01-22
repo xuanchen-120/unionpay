@@ -49,6 +49,19 @@ class UnionPay extends Init
      */
     public function setConfig()
     {
+        $this->this_type = config('unionpay.this_type');//设置环境
+        if ($this->this_type == 'test') {
+            $this->union_public = config('unionpay.certificate.test.union.public');
+            $this->ysd_public   = config('unionpay.certificate.test.ysd.public');
+            $this->ysd_private  = config('unionpay.certificate.test.ysd.private');
+            $this->code_url     = config('unionpay.unionpay_url.test.code');
+        } else {
+            $this->union_public = config('unionpay.certificate.dev.union.public');
+            $this->ysd_public   = config('unionpay.certificate.dev.ysd.public');
+            $this->ysd_private  = config('unionpay.certificate.dev.ysd.private');
+            $this->code_url     = config('unionpay.unionpay_url.dev.code');
+
+        }
         $this->msg_sender  = config('unionpay.msg_sender');
         $this->agent_id    = config('unionpay.agent_id');
         $this->outlet_id   = config('unionpay.outlet_id');
@@ -92,6 +105,7 @@ class UnionPay extends Init
     //处理流程
     public function out_data()
     {
+
         //是幂等
         if ($this->info && !empty($this->info->out_source)) {
             $this->outdata = $this->info->out_source;
@@ -144,13 +158,12 @@ class UnionPay extends Init
     public function InputData()
     {
         if (!$this->msg_txn_code) {
-            throw new \Exception('获取基础数据失败.');
+            throw new \Exception('获取基础数据失败');
         }
 
         $regular = config('unionpay.regular');
-
         if (!isset($regular[$this->msg_txn_code])) {
-            throw new \Exception('获取基础数据失败..');
+            throw new \Exception('获取基础数据失败');
         }
 
         //获取基础数据
@@ -161,10 +174,10 @@ class UnionPay extends Init
         foreach ($this->params as $key => $param) {
             if (in_array($key, $base)) {
                 $data[$key] = $param;
+            } else {
+                $data['in_source'][$key] = $param;
             }
         }
-
-        $data['in_source'] = $this->params;
 
         $this->model = UnionpayLog::create($data);
 
@@ -180,7 +193,6 @@ class UnionPay extends Init
      */
     public function checkInData()
     {
-
         try {
             //验签
             $res = $this->checkSign(false, false);
@@ -243,8 +255,8 @@ class UnionPay extends Init
                     "discount"    => 0,
                     "actual_amt"  => 0,
                     "pos_display" => "",
-                    "pos_receipt" => config('unionpay.pos_receipt'),
-                    "pos_ad"      => config('unionpay.pos_ad'),
+                    //                    "pos_receipt" => config('unionpay.pos_receipt'),
+                    //                    "pos_ad"      => config('unionpay.pos_ad'),
                     "pos_mkt_ad"  => config('unionpay.pos_receipt'),
                 ]);
                 break;
@@ -257,13 +269,8 @@ class UnionPay extends Init
                     'pay_amt'      => $this->params['pay_amt'],
                     'serv_chg'     => config('unionpay.serv_chg'),
                     'commission'   => config('unionpay.commission'),
-                    'pos_receipt'  => "原价" . bcdiv($this->params['orig_amt'], 100, 2) . "元，" .
-                                      "优惠券抵扣" . bcdiv($this->params['discount_amt'], 100, 2) . "元，" .
-                                      "实付{$this->params['pay_amt']}元",
                     'event_no'     => '',//活动号 直接为空就可以
-
                 ]);
-
                 break;
             //冲正
             case '002101':
@@ -288,9 +295,7 @@ class UnionPay extends Init
                 $basics = [];
                 break;
             case 'code':
-                $basics = array_merge($basics, [
-                    'msg_ver' => 0.1,
-                ]);
+                $basics = [];
                 break;
             case '012100':
                 $basics = array_merge($basics, [
@@ -327,12 +332,12 @@ class UnionPay extends Init
      * Notes: 更新返回值
      * @Author: 玄尘
      * @Date  : 2020/12/21 14:14
-     * @param bool $sign false 为银联返回数据 不校验
+     * @param  bool  $sign  false 为银联返回数据 不校验
      * @throws \Exception
      */
     public function updateOutData($sign = true)
     {
-        if ($sign && !isset($this->outdata['sign'])) {
+        if ($sign) {
             $this->outdata['sign'] = $this->getSign();
         }
 
