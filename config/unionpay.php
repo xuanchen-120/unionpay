@@ -5,6 +5,22 @@ return [
     'this_type'    => 'test',
     //添加日志
     'log'          => true,
+    //对账单信息
+    'check'        => [
+        'sftpadapter' => [
+            'host'          => 'localhost',//地址
+            'port'          => 22,//端口
+            'username'      => 'root', //账号
+            'password'      => '',//密码
+            'privateKey'    => '',
+            'passphrase'    => '',
+            'root'          => '/',//路径
+            'timeout'       => 10,//超时时间
+            'directoryPerm' => 0755,
+        ],
+        'type'        => 'JYMX',
+        'file_type'   => 'txt',
+    ],
     //获取微信侧的优惠券
     'unionpay_url' => [
         'test' => [

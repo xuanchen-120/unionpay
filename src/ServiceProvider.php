@@ -35,7 +35,14 @@ class ServiceProvider extends LaravelServiceProvider
 
             return $unionpay;
         });
-        
+
+        $this->app->bind('xuanchen.unionpay.check', function ($app) {
+            $check = new Check();
+            $check->setConfig();
+
+            return $check;
+        });
+
         $this->mergeConfigFrom(__DIR__ . '/../config/unionpay.php', 'unionpay');
     }
 

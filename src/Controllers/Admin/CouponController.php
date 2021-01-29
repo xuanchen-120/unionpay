@@ -41,33 +41,26 @@ class CouponController extends AdminController
         });
 
         $grid->column('id', '#ID#');
-        $grid->column('msg_txn_code', '交易类型')
-             ->using(config('unionpay.type'))
-             ->label();
-
-        $grid->column('msg_time', '报文日期');
-        $grid->column('mkt_code', '券码');
-        $grid->column('msg_sys_sn', '平台流水号');
-        $grid->column('req_serial_no', '流水号');
-        $grid->column('orig_req_serial_no', '原流水号');
+        $grid->column('mobile', '手机号');
+        $grid->column('openid', 'openid');
+        $grid->column('coupon_no', '券码');
+        $grid->column('event_no', '活动号');
+        $grid->column('orig_amt', '原始金额');
+        $grid->column('discount_amt', '优惠的金额');
+        $grid->column('pay_amt', '支付金额');
+        $grid->column('effective_date_time', '券码生效时间');
+        $grid->column('expire_date_time', '券码过期时间');
+        $grid->column('expire_date_time', '券码过期时间');
+        $grid->column('shop_no', '门店号');
+        $grid->column('trans_crrltn_no', '交易关联流水号');
+        $grid->column('order_no', '订单号');
         $grid->column('status', '状态')
-             ->using(UnionpayLog::STATUS)
+             ->using(UnionpayCoupon::STATUS)
              ->label([
-                 0 => 'success',
-                 1 => 'warning',
+                 1 => 'success',
+                 2 => 'warning',
              ]);
 
-        $grid->column('in_source', '请求参数')
-             ->display(function ($title, $column) {
-                 return '点击展开';
-             })->modal(InData::class);
-
-        $grid->column('out_source', '返回参数')
-             ->display(function ($title, $column) {
-                 return '点击展开';
-             })->modal(OutData::class);
-
-        //        $grid->column('sett_date', '清算日期');
         $grid->column('created_at', '注册时间');
         $grid->disableExport(false);
 
@@ -76,11 +69,6 @@ class CouponController extends AdminController
         });
 
         return $grid;
-    }
-
-    public function detail()
-    {
-
     }
 
 }

@@ -14,7 +14,7 @@ class UnionpayCoupon extends Model
 
     public function log()
     {
-        
+        return $this->belongsTo(UnionpayLog::class);
     }
 
 }
