@@ -2,7 +2,6 @@
 
 namespace XuanChen\UnionPay;
 
-use App\Models\UnionpayLog;
 use App\Models\User;
 use XuanChen\UnionPay\Action\Init;
 use XuanChen\Coupon\Coupon;
@@ -12,6 +11,7 @@ use XuanChen\UnionPay\Action\Reversal;
 use Illuminate\Support\Str;
 use XuanChen\UnionPay\Action\GetCode;
 use XuanChen\UnionPay\Action\UpdateCode;
+use XuanChen\UnionPay\Models\UnionpayLog;
 
 /**
  * 银联入口
