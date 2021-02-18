@@ -174,9 +174,8 @@ class UnionPay extends Init
         foreach ($this->params as $key => $param) {
             if (in_array($key, $base)) {
                 $data[$key] = $param;
-            } else {
-                $data['in_source'][$key] = $param;
             }
+            $data['in_source'][$key] = $param;
         }
 
         $this->model = UnionpayLog::create($data);
