@@ -27,8 +27,8 @@ class UnionPay extends Init
      */
     public function setParams($params)
     {
-        $this->params       = $params;
         $this->sign         = $params['sign'] ?? '';
+        $this->params       = $params;
         $this->msg_txn_code = $params['msg_txn_code'] ?? '';
     }
 
@@ -176,6 +176,7 @@ class UnionPay extends Init
                 $data[$key] = $param;
             }
             $data['in_source'][$key] = $param;
+           
         }
 
         $this->model = UnionpayLog::create($data);

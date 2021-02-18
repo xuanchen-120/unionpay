@@ -133,7 +133,8 @@ class Init
      */
     public function getSign($out = true)
     {
-        $signStr     = $this->getSignString($out);
+        $signStr = $this->getSignString($out);
+
         $private_key = $this->getPrivate();
         $privKeyId   = openssl_pkey_get_private($private_key);
 
@@ -167,6 +168,38 @@ class Init
             $params = $this->params;
         }
 
+        $params = $this->checkSignData($params, $out);
+
+        if (empty($params)) {
+            throw new \Exception('获取校验数据失败，缺少数据..');
+        }
+
+        ksort($params);
+
+        //http_build_query 会自动urlencode 需要转换
+        $signStr = $this->str2utf8(urldecode(http_build_query($params)));
+
+        //调试开关
+        $debug = config('unionpay.debug');
+        if ($debug) {
+            if ($out) {
+                info('type out ' . $signStr);
+            } else {
+                info('type in ' . $signStr);
+            }
+        }
+
+        return $signStr;
+    }
+
+    /**
+     * Notes: 格式化需要校验的数据
+     * @Author: 玄尘
+     * @Date  : 2021/2/18 15:47
+     * @param $params
+     */
+    public function checkSignData($params, $out)
+    {
         //需要校验的字段
         $checksigns  = config('unionpay.checksign');
         $checkparams = $params;
@@ -184,22 +217,32 @@ class Init
             }
         }
 
-        info($this->msg_txn_code . $out . json_encode($checkparams));
-        //            $params = array_filter($this->params);
-        $params = collect($checkparams)->filter(function ($value, $key) {
-            return strlen($value) > 0;
-        });
-
-        $params = $params->all();
-
-        if (empty($params)) {
-            throw new \Exception('获取校验数据失败，缺少数据..');
+        //排除sign
+        if (isset($checkparams['sign'])) {
+            unset($checkparams['sign']);
         }
 
-        ksort($params);
+        foreach ($checkparams as $key => &$param) {
+            if ($param === 'null') {
+                $param = '';
+            }
 
-        //http_build_query 会自动urlencode 需要转换
-        return $this->str2utf8(urldecode(http_build_query($params)));
+            if (is_null($param)) {
+                $param = '';
+            }
+        }
+
+        return $checkparams;
+        //
+        //        $params = collect($params);
+        //        $res    = $params->filter(function ($value, $key) {
+        //            //                return strlen($value);
+        //            return strlen($value);
+        //        });
+        //
+        //        $res = collect($params);
+        //
+        //        return $res->toArray();
 
     }
 
@@ -318,6 +361,16 @@ class Init
             return ['code' => 0, 'message' => $exception->getMessage()];
         }
 
+    }
+
+    /**
+     * Notes: 校验自己的签名
+     * @Author: 玄尘
+     * @Date  : 2021/2/18 15:20
+     */
+    public function checkOutData()
+    {
+        return $this->checkSign(true, true);
     }
 
 }

@@ -1,6 +1,8 @@
 <?php
 
 return [
+    //是否调试
+    'debug'        => false,
     //环境变量
     'this_type'    => 'test',
     //添加日志
