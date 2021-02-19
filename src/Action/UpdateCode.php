@@ -32,7 +32,7 @@ class UpdateCode implements Contracts
             $info   = UnionpayCoupon::where('coupon_no', $params['coupon_no'])->first();
 
             if (!$info) {
-                $this->unionpay->outdata['msg_rsp_code'] = 9996;
+                $this->unionpay->outdata['msg_rsp_code'] = 3001;
                 $this->unionpay->outdata['msg_rsp_desc'] = '未查询到优惠券信息';
 
                 return;
@@ -49,7 +49,7 @@ class UpdateCode implements Contracts
             $info->save();
 
         } catch (\Exception $e) {
-            $this->unionpay->outdata['msg_rsp_code'] = '9999';
+            $this->unionpay->outdata['msg_rsp_code'] = '3001';
             $this->unionpay->outdata['msg_rsp_desc'] = $e->getMessage();
         }
 

@@ -42,18 +42,22 @@ class IndexController extends Controller
         $inputs = $request->all();
         $app    = app('xuanchen.unionpay');
         $nosign = config('unionpay.nosign');
+        //调试开关
+        $debug = config('unionpay.debug');
 
         if (in_array($inputs['msg_txn_code'], $nosign)) {
             $app->setSign(false);
         }
         $app->setParams($inputs);
-        $app->start();
-
-        //调试开关
-        $debug = config('unionpay.debug');
         if ($debug) {
             //验签
             info('in sign：' . $app->sign);
+
+        }
+        $app->start();
+
+        if ($debug) {
+            //验签
             $app->sign = $app->outdata['sign'];
             $res       = $app->checkOutData();
             $res_str   = ($res === true) ? '成功' : '失败';

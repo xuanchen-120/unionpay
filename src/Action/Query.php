@@ -28,13 +28,14 @@ class Query implements Contracts
             if (is_array($res)) {
                 $this->unionpay->outdata['pos_display'] = $res['name'];
                 $this->unionpay->outdata['discount']    = $res['price'] * 100;
-                $this->unionpay->outdata['actual_amt']  = (int)bcsub($this->unionpay->params['amount'], $res['price'] * 100);
+                $this->unionpay->outdata['actual_amt']  = (int) bcsub($this->unionpay->params['amount'],
+                    $res['price'] * 100);
             } else {
-                $this->unionpay->outdata['msg_rsp_code'] = '9999';
+                $this->unionpay->outdata['msg_rsp_code'] = '3001';
                 $this->unionpay->outdata['msg_rsp_desc'] = $res;
             }
         } catch (\Exception $e) {
-            $this->unionpay->outdata['msg_rsp_code'] = '9999';
+            $this->unionpay->outdata['msg_rsp_code'] = '3001';
             $this->unionpay->outdata['msg_rsp_desc'] = $e->getMessage();
         }
 

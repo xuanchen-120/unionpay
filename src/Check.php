@@ -92,7 +92,7 @@ class Check
                 ]);
 
             unset($content[0]);
-
+            $repeal_ids = [];
             foreach ($content as $row) {
                 if (empty($row)) {
                     continue;
@@ -101,10 +101,11 @@ class Check
                 $row = explode('|', $row);
                 UnionpayCheckLog::updateOrCreate(
                     [
-                        'code'              => $row[23],
-                        'req_serial_no'     => $row[7],
-                        'shop'              => $row[0],
-                        'unionpay_check_id' => $check_model->id,
+                        'code'               => $row[23],
+                        'req_serial_no'      => $row[7],
+                        'orig_req_serial_no' => $row[15],
+                        'shop'               => $row[0],
+                        'unionpay_check_id'  => $check_model->id,
                     ],
                     [
                         'msg_txn_code' => $row[2],
@@ -114,7 +115,17 @@ class Check
                         'sett_date'    => $row[1],
                         'source'       => $row,
                     ]);
+
+                if ($row[2] == '002102') {
+                    $repeal_ids = array_merge($repeal_ids, [$row[15]]);
+                }
             }
+            if (!empty($repeal_ids)) {
+                UnionpayCheckLog::whereIn('req_serial_no', $repeal_ids)->update([
+                    'status' => UnionpayCheckLog::STATUS_REPEAL,
+                ]);
+            }
+
             $this->msg = '完成';
         } else {
             $this->code = false;

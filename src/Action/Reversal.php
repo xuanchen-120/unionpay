@@ -49,24 +49,24 @@ class Reversal implements Contracts
                     if ($coupon->status == 2) {
                         $res = Coupon::Reversal($coupon->redemptionCode, $this->unionpay->outlet_id);
                         if ($res !== true) {
-                            $this->unionpay->outdata['msg_rsp_code'] = '9999';
+                            $this->unionpay->outdata['msg_rsp_code'] = 3001;
                             $this->unionpay->outdata['msg_rsp_desc'] = $res;
                         }
                     } else {
-                        $this->unionpay->outdata['msg_rsp_code'] = '9999';
+                        $this->unionpay->outdata['msg_rsp_code'] = 3001;
                         $this->unionpay->outdata['msg_rsp_desc'] = '优惠券状态不对';
                     }
                 } else {
-                    $this->unionpay->outdata['msg_rsp_code'] = '9999';
+                    $this->unionpay->outdata['msg_rsp_code'] = 3001;
                     $this->unionpay->outdata['msg_rsp_desc'] = '未查询到卡券信息。';
                 }
 
             } else {
-                $this->unionpay->outdata['msg_rsp_code'] = '9999';
+                $this->unionpay->outdata['msg_rsp_code'] = 3001;
                 $this->unionpay->outdata['msg_rsp_desc'] = '未查询到销账接口数据。';
             }
         } catch (\Exception $e) {
-            $this->unionpay->outdata['msg_rsp_code'] = '9999';
+            $this->unionpay->outdata['msg_rsp_code'] = 3001;
             $this->unionpay->outdata['msg_rsp_desc'] = $e->getMessage();
         }
 

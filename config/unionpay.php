@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'user_model'   => \App\Models\User::class,
     //是否调试
     'debug'        => false,
     //环境变量

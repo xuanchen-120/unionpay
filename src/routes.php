@@ -11,6 +11,8 @@ Route::group([
 ], function (Router $router) {
     $router->resource('unionpays', 'IndexController');
     $router->resource('unionpaycoupons', 'CouponController');
+    $router->resource('unionchecks', 'CheckController');
+    $router->resource('unionchecklogs', 'CheckLogController');
 });
 
 //手机端

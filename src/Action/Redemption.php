@@ -31,26 +31,32 @@ class Redemption implements Contracts
                             ->latest()
                             ->first();
         if (!$query) {
-            $this->unionpay->outdata['msg_rsp_code'] = '9999';
+            $this->unionpay->outdata['msg_rsp_code'] = 3001;
             $this->unionpay->outdata['msg_rsp_desc'] = '销账失败，未查询到前置数据。';
         } else {
-            $this->unionpay->outdata['orig_amt']     = (int)$query->in_source['amount'];              //订单金额 原始金额
-            $this->unionpay->outdata['discount_amt'] = $query->out_source['discount'];                //折扣金额
-            $this->unionpay->outdata['pay_amt']      = $query->out_source['actual_amt'];              //折扣后金额
+            $this->unionpay->outdata['orig_amt']     = (int) $query->in_source['amount'];              //订单金额 原始金额
+            $this->unionpay->outdata['discount_amt'] = $query->out_source['discount'];                 //折扣金额
+            $this->unionpay->outdata['pay_amt']      = $query->out_source['actual_amt'];               //折扣后金额
 
-            //获取银联渠道
-            $user = User::find($this->unionpay->agent_id);
+            //获取网点
+            $outlet = config('unionpay.user_model')::where('shop_id', $this->unionpay->params['shop_no'])->first();
+            if (!$outlet) {
+                $this->unionpay->outdata['msg_rsp_code'] = 3001;
+                $this->unionpay->outdata['msg_rsp_desc'] = '销账失败，未查询到前置数据。';
+
+                return;
+            }
 
             $coupon = Coupon::Redemption(
-                $user,
+                $outlet->parent,
                 $query->mkt_code,
                 $this->unionpay->params['orig_amt'] / 100,
-                $this->unionpay->outlet_id,
+                $outlet->outlet_id,
                 ''
             );
 
             if (!is_array($coupon)) {
-                $this->unionpay->outdata['msg_rsp_code'] = '9999';
+                $this->unionpay->outdata['msg_rsp_code'] = 3001;
                 $this->unionpay->outdata['msg_rsp_desc'] = $coupon;
             }
 

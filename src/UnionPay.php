@@ -2,6 +2,7 @@
 
 namespace XuanChen\UnionPay;
 
+use App\Models\ActivityCoupon;
 use App\Models\User;
 use XuanChen\UnionPay\Action\Init;
 use XuanChen\Coupon\Coupon;
@@ -91,7 +92,7 @@ class UnionPay extends Init
             $this->updateOutData();
         } catch (\Exception $e) {
 
-            $this->outdata['msg_rsp_code'] = '9999';
+            $this->outdata['msg_rsp_code'] = $this->msg_txn_code == '0000' ? '3001' : 9996;
             $this->outdata['msg_rsp_desc'] = $e->getMessage() ?? '未知错误';
             if (empty($this->model->out_source)) {
 
@@ -176,7 +177,7 @@ class UnionPay extends Init
                 $data[$key] = $param;
             }
             $data['in_source'][$key] = $param;
-           
+
         }
 
         $this->model = UnionpayLog::create($data);
@@ -199,9 +200,12 @@ class UnionPay extends Init
             if ($res !== true) {
                 $this->msg_rsp_code = 9996;
                 $this->msg_rsp_desc = '验签失败';
+
+                return;
             }
+            $this->checkRule();//权限检查
         } catch (\Exception $e) {
-            $this->msg_rsp_code = 9996;
+            $this->msg_rsp_code = 3001;
             $this->msg_rsp_desc = $e->getMessage();
         }
 
@@ -217,14 +221,65 @@ class UnionPay extends Init
 
             if ($validator->fails()) {
                 $this->msg_rsp_code = 9996;
-                $this->msg_rsp_desc = $validator->errors()->first();
+                throw new \Exception($validator->errors()->first());
 
             }
 
         } else {
+            $msg = $this->msg_rsp_code == '0000' ? '平台流水号不能为空。' : $this->msg_rsp_desc;
+            throw new \Exception($msg);
+        }
 
-            $this->msg_rsp_code = 9996;
-            $this->msg_rsp_desc = $this->msg_rsp_code == '0000' ? '平台流水号不能为空。' : $this->msg_rsp_desc;
+    }
+
+    /**
+     * Notes: 检查是否有权限操作
+     * @Author: 玄尘
+     * @Date  : 2021/2/19 14:10
+     */
+    public function checkRule()
+    {
+        $shop_no = $this->params['shop_no'] ?? '';
+        if (!$shop_no) {
+            throw new \Exception('缺少门店号');
+        }
+
+        $user = config('unionpay.user_model')::where('shop_id', $shop_no)->first();
+        if (!$user) {
+            $this->msg_rsp_code = 3001;
+            $this->msg_rsp_desc = '操作失败，未查询到此门店数据';
+
+            return;
+        }
+
+        if ($this->msg_txn_code == '002025') {
+            $code = $this->params['mkt_code'] ?? '';
+            if (!$code) {
+                $this->msg_rsp_code = 9996;
+                $this->msg_rsp_desc = '操作失败，缺少聚合营销码';
+
+                return;
+            }
+
+            $info = ActivityCoupon::where('code', $code)->first();
+
+            if (!$info) {
+                $this->msg_rsp_code = 3001;
+                $this->msg_rsp_desc = '操作失败，未查询到卡券信息';
+
+                return;
+
+            }
+
+            //获取所有可核销渠道
+            $verifications = $info->activity->verifications()->pluck('user_id');
+
+            if (!in_array($user->parent_id, $verifications->toArray())) {
+                $this->msg_rsp_code = 3001;
+                $this->msg_rsp_desc = '操作失败，没有此优惠券的操作权限';
+
+                return;
+            }
         }
 
     }
