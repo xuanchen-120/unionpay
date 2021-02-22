@@ -2,9 +2,7 @@
 
 namespace XuanChen\UnionPay\Action;
 
-use App\Models\ActivityCoupon;
 use XuanChen\UnionPay\Models\UnionpayLog;
-use App\Models\User;
 use XuanChen\Coupon\Coupon;
 use XuanChen\UnionPay\Contracts\Contracts;
 use XuanChen\UnionPay\UnionPay;
@@ -42,7 +40,7 @@ class Redemption implements Contracts
             $outlet = config('unionpay.user_model')::where('shop_id', $this->unionpay->params['shop_no'])->first();
             if (!$outlet) {
                 $this->unionpay->outdata['msg_rsp_code'] = 3001;
-                $this->unionpay->outdata['msg_rsp_desc'] = '销账失败，未查询到前置数据。';
+                $this->unionpay->outdata['msg_rsp_desc'] = '销账失败，未查询到此门店数据。';
 
                 return;
             }
