@@ -78,15 +78,17 @@ class GetCode implements Contracts
                 $app->setSign(true);
                 $checksign = $app->checkSign(false, false);
                 if ($checksign !== true) {
-                    $this->unionpay->outdata['msg_rsp_code'] = 9996;
-                    $this->unionpay->outdata['msg_rsp_desc'] = '获取优惠券数据验签失败。';
+                    $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_code'] = 9996;
+                    $app->outdata['msg_rsp_desc'] = $this->unionpay->outdata['msg_rsp_desc'] = '获取优惠券数据验签失败。';
+                    $app->updateOutData(false);
 
                     return;
                 }
 
                 if (!isset($ret['coupon_list']) || !isset($ret['coupon_list'][0]['coupon_no'])) {
-                    $this->unionpay->outdata['msg_rsp_code'] = 9996;
-                    $this->unionpay->outdata['msg_rsp_desc'] = '没有找到优惠券信息。';
+                    $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_code'] = 9996;
+                    $app->outdata['msg_rsp_desc'] = $this->unionpay->outdata['msg_rsp_desc'] = '没有找到优惠券信息。';
+                    $app->updateOutData(false);
 
                     return;
                 }
@@ -105,8 +107,8 @@ class GetCode implements Contracts
 
                 $info = UnionpayCoupon::create($coupon);
                 if (!$info) {
-                    $this->unionpay->outdata['msg_rsp_code'] = '9999';
-                    $this->unionpay->outdata['msg_rsp_desc'] = '券码入库失败';
+                    $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_code'] = '9999';
+                    $app->outdata['msg_rsp_desc'] = $this->unionpay->outdata['msg_rsp_desc'] = '券码入库失败';
 
                     return;
                 }
@@ -119,8 +121,10 @@ class GetCode implements Contracts
                     'mobile'              => $info->mobile,
                 ]);
             } else {
-                $this->unionpay->outdata['msg_rsp_code'] = $ret['msg_rsp_code'];
-                $this->unionpay->outdata['msg_rsp_desc'] = $ret['msg_rsp_desc'];
+                $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_code'] = $ret['msg_rsp_code'];
+                $app->outdata['msg_rsp_desc'] = $this->unionpay->outdata['msg_rsp_desc'] = $ret['msg_rsp_desc'];
+                $app->updateOutData(false);
+
             }
 
         } catch (\Exception $e) {

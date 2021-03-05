@@ -239,17 +239,20 @@ class UnionPay extends Init
      */
     public function checkRule()
     {
-        $shop_no = $this->params['shop_no'] ?? '';
-        if (!$shop_no) {
-            throw new \Exception('缺少门店号');
-        }
+        //聚合营销校验门店号
+        if (in_array($this->msg_rsp_code, ['002025', '002100', '002101', '002102',])) {
+            $shop_no = $this->params['shop_no'] ?? '';
+            if (!$shop_no) {
+                throw new \Exception('缺少门店号');
+            }
 
-        $user = config('unionpay.user_model')::where('shop_id', $shop_no)->first();
-        if (!$user) {
-            $this->msg_rsp_code = 3001;
-            $this->msg_rsp_desc = '操作失败，未查询到此门店数据';
+            $user = config('unionpay.user_model')::where('shop_id', $shop_no)->first();
+            if (!$user) {
+                $this->msg_rsp_code = 3001;
+                $this->msg_rsp_desc = '操作失败，未查询到此门店数据';
 
-            return;
+                return;
+            }
         }
 
         if ($this->msg_txn_code == '002025') {
