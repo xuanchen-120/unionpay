@@ -41,7 +41,7 @@ class GetCode implements Contracts
                 'msg_ver'       => '0.2',
                 'sign_type'     => 'RSA',
                 'sp_chnl_no'    => config('unionpay.msg_sender'),
-                'sp_order_no'   => Helper::orderid(20),
+                'sp_order_no'   => $this->unionpay->params['sp_order_no'],
                 'order_date'    => Carbon::now()->format('Ymd'),
                 'event_no'      => $this->unionpay->params['event_no'],
                 'buy_quantity'  => 1,
@@ -76,7 +76,7 @@ class GetCode implements Contracts
             //成功
             if (isset($ret['msg_rsp_code']) && $ret['msg_rsp_code'] == '0000') {
                 $app->setSign(true);
-                $checksign = $app->checkSign(false, false);
+                $checksign = $app->checkSign(true, false);
                 if ($checksign !== true) {
                     $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_code'] = 9996;
                     $app->outdata['msg_rsp_desc'] = $this->unionpay->outdata['msg_rsp_desc'] = '获取优惠券数据验签失败。';

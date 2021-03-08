@@ -204,7 +204,7 @@ class Init
         $checksigns  = config('unionpay.checksign');
         $checkparams = $params;
 
-        if (isset($checksigns[$this->msg_txn_code])) {
+        if (isset($checksigns[$this->msg_txn_code]) && $params['msg_ver'] == 0.2) {
             $checkfrom = $out ? 'out' : 'in';
 
             if ($checksigns[$this->msg_txn_code] && isset($checksigns[$this->msg_txn_code][$checkfrom])) {
