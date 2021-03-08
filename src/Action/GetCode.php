@@ -93,24 +93,27 @@ class GetCode implements Contracts
                     return;
                 }
 
-                $coupon = [
-                    'unionpay_log_id'     => $app->model->id,
-                    'mobile'              => $this->unionpay->params['mobile'],
-                    'openid'              => $this->unionpay->params['issue_user_id'] ?? '',
-                    'event_no'            => $this->unionpay->params['event_no'],
-                    'coupon_no'           => $ret['coupon_list'][0]['coupon_no'],
-                    'effective_date_time' => Carbon::parse($ret['coupon_list'][0]['effective_date_time'])
-                                                   ->format('Y-m-d H:i:s'),
-                    'expire_date_time'    => Carbon::parse($ret['coupon_list'][0]['expire_date_time'])
-                                                   ->format('Y-m-d H:i:s'),
-                ];
-
-                $info = UnionpayCoupon::create($coupon);
+                $info = UnionpayCoupon::where('coupon_no', $ret['coupon_list'][0]['coupon_no'])->first();
                 if (!$info) {
-                    $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_code'] = '9999';
-                    $app->outdata['msg_rsp_desc'] = $this->unionpay->outdata['msg_rsp_desc'] = '券码入库失败';
+                    $coupon = [
+                        'unionpay_log_id'     => $app->model->id,
+                        'mobile'              => $this->unionpay->params['mobile'],
+                        'openid'              => $this->unionpay->params['issue_user_id'] ?? '',
+                        'event_no'            => $this->unionpay->params['event_no'],
+                        'coupon_no'           => $ret['coupon_list'][0]['coupon_no'],
+                        'effective_date_time' => Carbon::parse($ret['coupon_list'][0]['effective_date_time'])
+                                                       ->format('Y-m-d H:i:s'),
+                        'expire_date_time'    => Carbon::parse($ret['coupon_list'][0]['expire_date_time'])
+                                                       ->format('Y-m-d H:i:s'),
+                    ];
 
-                    return;
+                    $info = UnionpayCoupon::create($coupon);
+                    if (!$info) {
+                        $app->outdata['msg_rsp_code'] = $this->unionpay->outdata['msg_rsp_code'] = '9999';
+                        $app->outdata['msg_rsp_desc'] = $this->unionpay->outdata['msg_rsp_desc'] = '券码入库失败';
+
+                        return;
+                    }
                 }
 
                 $this->unionpay->outdata = array_merge($this->unionpay->outdata, [
