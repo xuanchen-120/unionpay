@@ -287,7 +287,7 @@ return [
             'req_serial_no',
             'coupon_no',
             'coupon_type',
-            'enc_card_no',
+            //            'enc_card_no',
             'acq_term_sn',
             'refer_no',
             'sett_date',

@@ -50,7 +50,6 @@ class CouponController extends AdminController
         $grid->column('pay_amt', '支付金额');
         $grid->column('effective_date_time', '券码生效时间');
         $grid->column('expire_date_time', '券码过期时间');
-        $grid->column('expire_date_time', '券码过期时间');
         $grid->column('shop_no', '门店号');
         $grid->column('trans_crrltn_no', '交易关联流水号');
         $grid->column('order_no', '订单号');
