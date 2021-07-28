@@ -459,7 +459,7 @@ return [
                 "term_no"            => "终端号",
                 "req_serial_no"      => "销券流水号",
                 "orig_req_serial_no" => "原查询流水号",
-                "enc_card_no"        => "加密卡号",
+                //                "enc_card_no"        => "加密卡号",
                 "part_card_no"       => "部分卡号",
                 "acq_term_sn"        => "受理终端流水号",
                 "refer_no"           => "检索参考号",
