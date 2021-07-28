@@ -4,8 +4,8 @@ namespace XuanChen\UnionPay\Controllers\Api;
 
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
-use XuanChen\UnionPay\UnionPay;
 use Illuminate\Routing\Controller;
+use XuanChen\UnionPay\UnionPay;
 
 class IndexController extends Controller
 {

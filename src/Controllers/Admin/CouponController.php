@@ -31,8 +31,8 @@ class CouponController extends AdminController
 
         $grid->filter(function ($filter) {
             $filter->column(1 / 2, function ($filter) {
-                $filter->equal('msg_txn_code', '交易类型')
-                       ->select(config('unionpay.type'));
+                $filter->equal('msg_txn_code', '交易类型')->select(config('unionpay.type'));
+                $filter->equal('status', '状态')->select(UnionpayCoupon::STATUS);
             });
             $filter->column(1 / 2, function ($filter) {
                 $filter->equal('req_serial_no', '流水号');

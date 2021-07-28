@@ -5,7 +5,7 @@ namespace XuanChen\UnionPay\Listeners;
 use GuzzleHttp\Client;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use RuntimeException;
-use XuanChen\UnionPay\Event\ConponCallback;
+use XuanChen\UnionPay\Event\UnionpayConponCallback;
 
 class UnionpayConponCallbackListener implements ShouldQueue
 {
@@ -14,11 +14,11 @@ class UnionpayConponCallbackListener implements ShouldQueue
 
     /**
      * Handle the event.
-     * @param  XuanChen\UnionPay\Event\ConponCallback  $event
+     * @param  XuanChen\UnionPay\Event\UnionpayConponCallback  $event
      * @return void
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function handle(ConponCallback $event)
+    public function handle(UnionpayConponCallback $event)
     {
         $coupon = $event->coupon;
 
@@ -39,6 +39,8 @@ class UnionpayConponCallbackListener implements ShouldQueue
             if ($response->getStatusCode() == 200) {
                 $body   = $response->getBody();
                 $result = json_decode($body->getContents(), true);
+                $error  = false;
+
             } else {
                 $remark = '接口错误';
                 $error  = true;
