@@ -5,20 +5,20 @@ return [
     //是否调试
     'debug'        => false,
     //环境变量
-    'this_type'    => 'test',
+    'this_type'    => 'dev',
     //添加日志
     'log'          => true,
     //对账单信息
     'check'        => [
         'sftpadapter' => [
-            'host'          => 'localhost',//地址
-            'port'          => 22,//端口
-            'username'      => 'root', //账号
-            'password'      => '',//密码
+            'host'          => env('UNION_HOST', ''), //地址
+            'port'          => env('UNION_PORT', 22), //端口
+            'username'      => env('UNION_USERNAME', 'root'), //账号
+            'password'      => env('UNION_PASSWORD', ''), //密码
             'privateKey'    => '',
             'passphrase'    => '',
-            'root'          => '/',//路径
-            'timeout'       => 10,//超时时间
+            'root'          => env('UNION_ROOT', '/'), //路径
+            'timeout'       => 10, //超时时间
             'directoryPerm' => 0755,
         ],
         'type'        => 'JYMX',
@@ -39,8 +39,8 @@ return [
         //        '002100',//核销
         //        '002101',//冲正
         //        '002102',//撤销
-        'openid',//获取openid 封装数据
-        'code',//微信测获取优惠券
+        'openid', //获取openid 封装数据
+        'code', //微信测获取优惠券
     ],
     //分配的渠道号
     'msg_sender'   => '660134',
@@ -287,7 +287,7 @@ return [
             'req_serial_no',
             'coupon_no',
             'coupon_type',
-            //            'enc_card_no',
+            // 'enc_card_no',
             'acq_term_sn',
             'refer_no',
             'sett_date',
@@ -296,7 +296,7 @@ return [
             'orig_amt',
             'discount_amt',
             'pay_amt',
-            'pay_mode',
+            // 'pay_mode',
             'event_no',
         ],
     ],
@@ -310,9 +310,9 @@ return [
             "msg_sender",
             "msg_time",
             "msg_ver",
-            "msg_sys_sn",//自己添加的基础数据
-            "req_serial_no",//自己添加的基础数据
-            "mkt_code",//自己添加的基础数据
+            "msg_sys_sn", //自己添加的基础数据
+            "req_serial_no", //自己添加的基础数据
+            "mkt_code", //自己添加的基础数据
         ],
         '002100' => [
             "msg_type",
@@ -323,9 +323,10 @@ return [
             "msg_time",
             "msg_sys_sn",
             "msg_ver",
-            "req_serial_no",//自己添加的基础数据
-            "orig_req_serial_no",//自己添加的基础数据
-            "sett_date",//自己添加的基础数据
+            "req_serial_no", //自己添加的基础数据
+            "orig_req_serial_no", //自己添加的基础数据
+            "sett_date", //自己添加的基础数据
+            "mkt_code", //自己添加的基础数据
         ],
         '002101' => [
             "msg_type",
@@ -336,8 +337,8 @@ return [
             "msg_time",
             "msg_sys_sn",
             "msg_ver",
-            "req_serial_no",//自己添加的基础数据
-            "orig_req_serial_no",//自己添加的基础数据
+            "req_serial_no", //自己添加的基础数据
+            "orig_req_serial_no", //自己添加的基础数据
         ],
         '002102' => [
             "msg_type",
@@ -348,8 +349,8 @@ return [
             "msg_time",
             "msg_sys_sn",
             "msg_ver",
-            "req_serial_no",//自己添加的基础数据
-            "orig_req_serial_no",//自己添加的基础数据
+            "req_serial_no", //自己添加的基础数据
+            "orig_req_serial_no", //自己添加的基础数据
         ],
         //封装获取openid数据
         'openid' => [
@@ -415,7 +416,7 @@ return [
                 "term_sp_chnl_no"   => "终端指定SP渠道号",
                 "func_code"         => "功能码",
                 "times"             => "次数",
-                "pay_mode"          => "支付方式",
+                // "pay_mode"          => "支付方式",
                 //用户附加信息
                 "user_ext_info"     => [
                     "mobile_no"      => "手机号",
@@ -459,7 +460,7 @@ return [
                 "term_no"            => "终端号",
                 "req_serial_no"      => "销券流水号",
                 "orig_req_serial_no" => "原查询流水号",
-                //                "enc_card_no"        => "加密卡号",
+                "enc_card_no"        => "加密卡号",
                 "part_card_no"       => "部分卡号",
                 "acq_term_sn"        => "受理终端流水号",
                 "refer_no"           => "检索参考号",
@@ -601,7 +602,7 @@ return [
                 "msg_txn_code"  => "交易代码",
                 "msg_crrltn_id" => "消息关联号",
                 "msg_sender"    => "报文发送方",
-                "issue_user_id" => "发券平台渠道用户id",//领取微信活动的券码送微信的openid
+                "issue_user_id" => "发券平台渠道用户id", //领取微信活动的券码送微信的openid
                 "event_no"      => "活动号",
                 "mobile"        => "手机号",
             ],
@@ -664,7 +665,7 @@ return [
                 "req_serial_no"    => "销券流水号",
                 "coupon_no"        => "凭证号",
                 "coupon_type"      => "凭证类型",
-                "enc_card_no"      => "加密卡号",
+                // "enc_card_no"      => "加密卡号",
                 "acq_term_sn"      => "受理终端流水号",
                 "refer_no"         => "检索参考号",
                 "sett_date"        => "清算日期",

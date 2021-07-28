@@ -2,6 +2,7 @@
 
 namespace XuanChen\UnionPay\Action;
 
+use GuzzleHttp\Client;
 use XuanChen\UnionPay\Models\UnionpayLog;
 use XuanChen\UnionPay\Models\UnionpayCoupon;
 use Carbon\Carbon;
@@ -9,6 +10,7 @@ use XuanChen\Coupon\Coupon;
 use XuanChen\UnionPay\Contracts\Contracts;
 use XuanChen\UnionPay\UnionPay;
 use XuanChen\UnionPay\Utils\Helper;
+use XuanChen\UnionPay\Event\UnionpayConponCallback;
 
 class UpdateCode implements Contracts
 {
@@ -47,6 +49,8 @@ class UpdateCode implements Contracts
             $info->order_no        = $params['order_no'] ?? '';
             $info->status          = 2;
             $info->save();
+
+            event(new UnionpayConponCallback($info));
 
         } catch (\Exception $e) {
             $this->unionpay->outdata['msg_rsp_code'] = '3001';
