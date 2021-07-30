@@ -13,10 +13,10 @@ class CheckController extends AdminController
     protected $title = '对账单日志';
 
     /**
-     * Notes: description
-     * @Author: 玄尘
-     * @Date  : 2021/7/29 10:39
-     * @return \Encore\Admin\Grid
+     * Notes:
+     * @Author: <C.Jason>
+     * @Date  : 2019/9/18 14:50
+     * @return Grid
      */
     protected function grid()
     {

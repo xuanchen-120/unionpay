@@ -674,7 +674,7 @@ return [
                 "orig_amt"         => "原始金额",
                 "discount_amt"     => "优惠的金额",
                 "pay_amt"          => "支付金额",
-                "pay_mode"         => "支付方式",
+                //                "pay_mode"         => "支付方式",
                 "event_no"         => "活动号",
                 "trans_crrltn_no"  => "交易关联流水号",
                 "equity_no"        => "权益号",

@@ -12,6 +12,11 @@ class UnionpayCoupon extends Model
         self::STATUS_USED => '已使用',
     ];
 
+    public function getStatusTextAttribute()
+    {
+        return self::STATUS[$this->status] ?? '未知';
+    }
+
     public function log()
     {
         return $this->belongsTo(UnionpayLog::class);
