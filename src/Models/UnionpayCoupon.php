@@ -2,6 +2,8 @@
 
 namespace XuanChen\UnionPay\Models;
 
+use App\Models\User;
+
 class UnionpayCoupon extends Model
 {
 
@@ -20,6 +22,11 @@ class UnionpayCoupon extends Model
     public function log()
     {
         return $this->belongsTo(UnionpayLog::class);
+    }
+
+    public function user()
+    {
+        return $this->hasOne(User::class, 'shop_id', 'shop_no');
     }
 
 }
