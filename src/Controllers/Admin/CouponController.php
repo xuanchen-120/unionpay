@@ -67,9 +67,10 @@ class CouponController extends AdminController
         $grid->column('effective_date_time', '券码生效时间');
         $grid->column('expire_date_time', '券码过期时间');
         $grid->column('shop_no', '门店号');
-        $grid->column('门店名称')->display(function () {
-            return $this->user ? $this->user->info->nickname : '---';
-        });
+        $grid->column('门店名称')
+             ->display(function () {
+                 return $this->outlet ? $this->outlet->info->nickname : '---';
+             });
         $grid->column('trans_crrltn_no', '交易关联流水号')->hide();
         $grid->column('order_no', '订单号')->hide();
         $grid->column('status', '状态')

@@ -24,7 +24,13 @@ class UnionpayCoupon extends Model
         return $this->belongsTo(UnionpayLog::class);
     }
 
-    public function user()
+    /**
+     * Notes: 关联网点
+     * @Author: 玄尘
+     * @Date  : 2021/8/31 15:42
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function outlet()
     {
         return $this->hasOne(User::class, 'shop_id', 'shop_no');
     }
